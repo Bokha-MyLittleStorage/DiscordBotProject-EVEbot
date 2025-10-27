@@ -3,6 +3,14 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# customs by chatgpt
+bin/
+obj/
+.vs/
+*.user
+*.suo
+.env
+
 # User-specific files
 *.rsuser
 *.suo
