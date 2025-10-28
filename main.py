@@ -9,10 +9,12 @@ import openai
 #.env에서 토큰 불러오기 (개발 환경에서만, 깃 업로드 시 주석처리하기)
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())  # 자동으로 .env 파일 경로를 찾고 로드
-API_KEY = os.getenv("MY_API_KEY")
+API_KEY = os.getenv("API_KEY")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 # 여기까지
 '''
+API_KEY = os.getenv("API_KEY")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # 타임스탬프
 # print(f"[{discord.utils.utcnow()}] ")
