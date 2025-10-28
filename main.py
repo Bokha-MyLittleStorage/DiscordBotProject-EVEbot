@@ -4,6 +4,8 @@ from discord.ext import commands
 from datetime import datetime, timedelta
 import os
 import openai
+import threading
+from flask import Flask
 
 '''
 #.env에서 토큰 불러오기 (개발 환경에서만, 깃 업로드 시 주석처리하기)
@@ -85,4 +87,42 @@ async def newfleet(ctx, *, message_raw): # 플릿 생성
 
     await ctx.send(f"이벤트가 생성되었습니다 👉 {event.name}")
     
-bot.run(BOT_TOKEN)
+def run_discord_bot():
+    API_KEY = os.getenv("API_KEY")
+    BOT_TOKEN = os.getenv("BOT_TOKEN")
+    openai.api_key = API_KEY  # 발급받은 키 입력
+    intents = discord.Intents.default()
+    intents.message_content = True  # 👈 메시지 내용 읽기 허용
+    intents.messages = True
+    intents.guilds = True
+
+    bot = commands.Bot(command_prefix="!", intents=intents)
+
+    bot.run(BOT_TOKEN)
+
+# ----------------- 2. Render용 HTTP 서버 추가 -----------------
+
+# Render가 요구하는 PORT 환경 변수를 가져옵니다. 기본값은 10000입니다.
+PORT = int(os.environ.get("PORT", 10000)) 
+
+app = Flask(__name__)
+
+# Render는 이 엔드포인트에 주기적으로 요청을 보내 서비스 상태를 확인합니다.
+@app.route('/')
+def home():
+    return "Discord Bot is Running!", 200
+
+def run_flask_server():
+    # 0.0.0.0 호스트와 Render가 요구하는 PORT에 바인딩합니다.
+    app.run(host='0.0.0.0', port=PORT)
+
+# ----------------- 3. 메인 실행 -----------------
+
+if __name__ == '__main__':
+    # 봇을 별도의 스레드로 실행하여 봇과 서버가 동시에 돌아가도록 합니다.
+    # Flask 서버는 메인 스레드에서 실행됩니다.
+    bot_thread = threading.Thread(target=run_discord_bot)
+    bot_thread.start()
+
+    # Flask 서버 (HTTP 서버)를 시작하여 Render의 포트 바인딩 요구 사항을 충족합니다.
+    run_flask_server()
