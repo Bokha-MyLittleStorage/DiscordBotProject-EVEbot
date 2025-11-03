@@ -43,8 +43,8 @@ async def on_message(ctx):
 
 @bot.command()
 async def hello(ctx):
-    print(f"[{discord.utils.utcnow()}] hello, working now.")
-    await ctx.send(f"[{discord.utils.utcnow()}] hello, working now.")
+    print(f"[{discord.utils.utcnow()}] 명령어 수신: !hello")
+    await ctx.send(f"[{discord.utils.utcnow()}] 현재 봇이 온라인입니다.")
 
 @bot.command()
 async def newfleet(ctx, *, message_raw): # 플릿 생성
@@ -52,8 +52,8 @@ async def newfleet(ctx, *, message_raw): # 플릿 생성
     # 메시지 받아오기
     message = message_raw[:500]
     fleet_leader = ctx.author.display_name
-    print(f"[{discord.utils.utcnow()}] 메시지 수신: " + message)
-    print(f"[{discord.utils.utcnow()}] 메시지 작성자: " + fleet_leader)
+    print(f"[{discord.utils.utcnow()}] 명령어 수신: !newfleet")
+    print(f"[{discord.utils.utcnow()}] 명령어 작성자: " + fleet_leader)
     message_link = f"https://discord.com/channels/{ctx.message.guild.id}/{ctx.message.channel.id}/{ctx.message.id}"
     
     # 전처리
@@ -61,9 +61,11 @@ async def newfleet(ctx, *, message_raw): # 플릿 생성
     model="gpt-5-mini", input= [
     {"role": "system", "content": "You are a assistant."},
     {"role": "user", "content": f"""현재 시각 정보를 기반으로 다음 메시지의 내용에서 언급된 시각을 구하고,
-    해당 시각까지 남은 시간을 초 단위로 변환해서 출력해줘.
+    해당 시각까지 남은 시간을 초 단위로 변환해서 출력해줘. 
     현재 시각은 {discord.utils.utcnow()+ timedelta(hours=9)}이야.
-    출력할 때는 출력값을 바로 코드에 집어넣을 수 있도록 문자 없이 정수 형태로 대답해 줘."""
+    만약 메시지의 내용에 정확한 시각을 특정할 정보가 없다면 오후 9시를 기본값으로 사용하고,
+    만약 메시지의 내용에 정확한 날짜를 특정할 정보가 없다면 시각 정보를 바탕으로 다가오는 가장 빠른 해당 시각을 기본값으로 사용하도록 해.
+    출력값을 바로 코드에 집어넣을 수 있도록 문자 없이 정수 형태로 출력해 줘."""
      + " 메시지: " + message} ],
     #reasoning={"effort": "minimal"}, # 켜면 자원을 덜 먹지만 망가지더라
     #text={"verbosity": "low"}
@@ -75,7 +77,7 @@ async def newfleet(ctx, *, message_raw): # 플릿 생성
     end_time = start_time + timedelta(hours=1)
 
     event = await guild.create_scheduled_event(
-        name=("New Fleet by "+ fleet_leader),
+        name=("Fleet by "+ fleet_leader),
         start_time=start_time,
         end_time=end_time,
         privacy_level=discord.PrivacyLevel.guild_only,
@@ -85,7 +87,12 @@ async def newfleet(ctx, *, message_raw): # 플릿 생성
         description= message
     )
 
-    await ctx.send(f"이벤트가 생성되었습니다 👉 {event.name}")
+    await ctx.send(f"이벤트 생성에 성공했습니다. 👉 {event.name}")
+
+
+@bot.command()
+async def fleets(ctx): # 플릿 불러오기
+    pass
     
 def run_discord_bot():
     API_KEY = os.getenv("API_KEY")
